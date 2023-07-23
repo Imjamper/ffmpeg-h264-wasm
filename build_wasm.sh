@@ -32,7 +32,7 @@ ensure_emscripten() {
 }
 
 ensure_ffmpeg() {
-  ensure_repo url='git@github.com:FFmpeg/FFmpeg.git' name='ffmpeg'
+  ensure_repo url='http://github.com/FFmpeg/FFmpeg' name='ffmpeg'
 }
 
 build() {

@@ -12,9 +12,8 @@ export type libavh264 = {
     yPlaneOut: number,
     uPlaneOut: number,
     vPlaneOut: number,
-    widthOut: number,
-    heightOut: number,
     strideOut: number,
+    isKeyFrame: number,
   ): number
   getValue(address: number, addressType: string): number
   _create_codec_context(): number
@@ -24,7 +23,7 @@ export type libavh264 = {
 
 const h264Decoders: Record<string, H264Decoder> = {}
 
-export function init() {
+export function init(width: number, height: number) {
   return LibavH264().then((LibavH264: libavh264) => {
     self.addEventListener(
       'message',
@@ -37,18 +36,21 @@ export function init() {
           case 'decode': {
             let decoder = h264Decoders[renderStateId]
             if (!decoder) {
-              decoder = new H264Decoder(LibavH264, (output, width, height) => {
-                postMessage(
-                  {
-                    type: 'pictureReady',
-                    width,
-                    height,
-                    renderStateId,
-                    data: output,
-                  },
-                  [output.yPlane.buffer, output.uPlane.buffer, output.vPlane.buffer],
-                )
-              })
+              decoder = new H264Decoder(
+                LibavH264,
+                (output) => {
+                  postMessage(
+                    {
+                      type: 'pictureReady',
+                      renderStateId,
+                      data: output,
+                    },
+                    [output.frame.y.bytes.buffer, output.frame.u.bytes.buffer, output.frame.v.bytes.buffer],
+                  )
+                },
+                width,
+                height,
+              )
               h264Decoders[renderStateId] = decoder
             }
             decoder.decode(new Uint8Array(message.data, message.offset, message.length))

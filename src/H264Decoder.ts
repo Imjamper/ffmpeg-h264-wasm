@@ -22,24 +22,29 @@
 
 import { libavh264 } from './H264Worker'
 import { FfmpegH264Frame } from './index'
+import { YUVFormat } from '../types/yuv-buffer'
+import YUVBuffer from './yuv-buffer/yuv-buffer'
 
 export class H264Decoder {
   private readonly codecContext: number
   private readonly dataIn: number
 
   private readonly yPlaneOut: number
+  private readonly uPlaneOut: number
+  private readonly vPlaneOut: number
+  private readonly isKeyFrameOut: number
   private readonly strideOut: number
 
-  private readonly uPlaneOut: number
+  private readonly width: number
+  private readonly height: number
 
-  private readonly vPlaneOut: number
-
-  private readonly widthOut: number
-  private readonly heightOut: number
+  private readonly format: YUVFormat
 
   constructor(
     private readonly libavH264Module: libavh264,
-    private readonly onPictureReady: (output: FfmpegH264Frame, width: number, height: number) => void,
+    private readonly onPictureReady: (output: FfmpegH264Frame) => void,
+    width: number,
+    height: number,
   ) {
     this.codecContext = this.libavH264Module._create_codec_context()
     this.dataIn = this.libavH264Module._malloc(1024 * 1024)
@@ -48,18 +53,37 @@ export class H264Decoder {
     this.uPlaneOut = this.libavH264Module._malloc(4)
     this.vPlaneOut = this.libavH264Module._malloc(4)
 
-    this.widthOut = this.libavH264Module._malloc(4)
-    this.heightOut = this.libavH264Module._malloc(4)
+    this.width = width
+    this.height = height
+    this.isKeyFrameOut = this.libavH264Module._malloc(4)
     this.strideOut = this.libavH264Module._malloc(4)
+
+    this.format = YUVBuffer.format({
+      width: width,
+      height: height,
+
+      chromaWidth: width / 2,
+      chromaHeight: height / 2,
+
+      cropLeft: 0,
+      cropTop: 4,
+      cropWidth: width,
+      cropHeight: height,
+
+      displayWidth: width,
+      displayHeight: height,
+    })
   }
 
   release() {
     this.libavH264Module._destroy_codec_context(this.codecContext)
     this.libavH264Module._free(this.dataIn)
     this.libavH264Module._free(this.yPlaneOut)
+    this.libavH264Module._free(this.uPlaneOut)
+    this.libavH264Module._free(this.vPlaneOut)
 
-    this.libavH264Module._free(this.widthOut)
-    this.libavH264Module._free(this.heightOut)
+    this.libavH264Module._free(this.isKeyFrameOut)
+    this.libavH264Module._free(this.strideOut)
   }
 
   decode(nal: Uint8Array) {
@@ -73,43 +97,34 @@ export class H264Decoder {
       this.uPlaneOut,
       this.vPlaneOut,
 
-      this.widthOut,
-      this.heightOut,
       this.strideOut,
+      this.isKeyFrameOut,
     )
 
     const yPlanePtr = this.libavH264Module.getValue(this.yPlaneOut, 'i8*')
     const uPlanePtr = this.libavH264Module.getValue(this.uPlaneOut, 'i8*')
     const vPlanePtr = this.libavH264Module.getValue(this.vPlaneOut, 'i8*')
 
-    const width = this.libavH264Module.getValue(this.widthOut, 'i32')
-    const height = this.libavH264Module.getValue(this.heightOut, 'i32')
     const stride = this.libavH264Module.getValue(this.strideOut, 'i32')
+    const isKeyFrame = this.libavH264Module.getValue(this.isKeyFrameOut, 'i32')
 
     // We assume I420 output else this will fail miserably
     // TODO we should probably handle other formats as well
-    const lumaSize = height * stride
-    const chromaSize = (height * stride) / 2
+    const lumaSize = this.height * stride
+    const chromaSize = (this.height * stride) / 2
 
     if (yPlanePtr === 0) {
       return
     }
 
-    const yPlane = new Uint8Array(this.libavH264Module.HEAPU8.subarray(yPlanePtr, yPlanePtr + lumaSize))
-    const uPlane = new Uint8Array(this.libavH264Module.HEAPU8.subarray(uPlanePtr, uPlanePtr + chromaSize))
-    const vPlane = new Uint8Array(this.libavH264Module.HEAPU8.subarray(vPlanePtr, vPlanePtr + chromaSize))
-
-    this.onPictureReady(
-      {
-        ptr,
-        yPlane,
-        uPlane,
-        vPlane,
-        stride,
-      },
-      width,
-      height,
+    const frame = YUVBuffer.frame(
+      this.format,
+      YUVBuffer.lumaPlane(this.format, this.libavH264Module.HEAPU8, yPlanePtr, yPlanePtr + lumaSize),
+      YUVBuffer.chromaPlane(this.format, this.libavH264Module.HEAPU8, uPlanePtr, uPlanePtr + chromaSize),
+      YUVBuffer.chromaPlane(this.format, this.libavH264Module.HEAPU8, vPlanePtr, vPlanePtr + chromaSize),
     )
+
+    this.onPictureReady({ ptr: ptr, isKeyFrame: isKeyFrame === 1, frame })
   }
 
   closeFrame(framePtr: number) {

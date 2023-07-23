@@ -33,26 +33,29 @@ decode(AVCodecContext *ctx,
        uint8_t **y_plane_out,
        uint8_t **u_plane_out,
        uint8_t **v_plane_out,
-       int *width_out,
-       int *height_out,
-       int *stride_out
+       int *stride_out,
+       int *is_key_frame
 ) {
     AVFrame *frame = av_frame_alloc();
-    AVPacket avpkt;
+    AVPacket *avpkt = av_packet_alloc();
     int ret;
 
-    avpkt.data = data_in;
-    avpkt.size = data_in_size;
+    avpkt->data = data_in;
+    avpkt->size = data_in_size;
 
-    ret = avcodec_send_packet(ctx, &avpkt);
+    ret = avcodec_send_packet(ctx, avpkt);
     if (ret != 0) {
         // TODO handle error codes?
+		av_packet_unref(avpkt);
+		av_packet_free(&avpkt);
         return NULL;
     }
 
     ret = avcodec_receive_frame(ctx, frame);
     if (ret != 0) {
         // TODO handle error codes?
+		av_packet_unref(avpkt);
+		av_packet_free(&avpkt);
         return NULL;
     }
 
@@ -60,8 +63,12 @@ decode(AVCodecContext *ctx,
     *u_plane_out = frame->data[1];
     *v_plane_out = frame->data[2];
     *stride_out = frame->linesize[0];
+    *is_key_frame = frame->key_frame;
     *width_out = frame->width;
     *height_out = frame->height;
+	
+	av_packet_unref(avpkt);
+	av_packet_free(&avpkt);
 
     return frame;
 }
