@@ -64,8 +64,6 @@ decode(AVCodecContext *ctx,
     *v_plane_out = frame->data[2];
     *stride_out = frame->linesize[0];
     *is_key_frame = frame->key_frame;
-    *width_out = frame->width;
-    *height_out = frame->height;
 	
 	av_packet_unref(avpkt);
 	av_packet_free(&avpkt);
