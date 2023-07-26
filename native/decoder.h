@@ -19,6 +19,8 @@ decode(AVCodecContext *ctx,
        uint8_t **y_plane_out,
        uint8_t **u_plane_out,
        uint8_t **v_plane_out,
+       int *width_out,
+       int *height_out,
        int *stride_out,
        int *is_key_frame
 );
