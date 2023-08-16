@@ -48,7 +48,7 @@ AVFrame * decode(AVCodecContext *ctx,
       }
       AVDictionaryEntry *sizeEntry = av_dict_get(dict, "s", NULL, 0);
       if (sizeEntry) {
-        avpkt->size = stoi(sizeEntry->value);
+        avpkt->size = atoi(sizeEntry->value);
       }
       AVDictionaryEntry *timeEntry = av_dict_get(dict, "t", NULL, 0);
       if (timeEntry) {
