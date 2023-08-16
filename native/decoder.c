@@ -42,7 +42,7 @@ AVFrame * decode(AVCodecContext *ctx,
     if (av_packet_unpack_dictionary(data_in, data_in_size, &dict) >= 0) {
       AVDictionaryEntry *dataEntry = av_dict_get(dict, "d", NULL, 0);
       if (dataEntry) {
-        avpkt->data = dataEntry->value;
+        avpkt->data = (uint8_t*)dataEntry->value;
       }
       AVDictionaryEntry *sizeEntry = av_dict_get(dict, "s", NULL, 0);
       if (sizeEntry) {
