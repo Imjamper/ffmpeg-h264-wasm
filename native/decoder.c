@@ -52,7 +52,7 @@ AVFrame * decode(AVCodecContext *ctx,
       }
       AVDictionaryEntry *timeEntry = av_dict_get(dict, "t", NULL, 0);
       if (timeEntry) {
-        timestamp_out = strtoull(timeEntry->value, NULL, 10);
+        timestamp_out = strtoul(timeEntry->value, NULL, 10);
       }
       
       av_dict_free(&dict);
