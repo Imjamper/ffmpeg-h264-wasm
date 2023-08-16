@@ -3,17 +3,13 @@
 
 #include "libavcodec/avcodec.h"
 
-AVCodecContext *
-create_codec_context();
+AVCodecContext * create_codec_context();
 
-void
-destroy_codec_context(AVCodecContext *ctx);
+void destroy_codec_context(AVCodecContext *ctx);
 
-void
-close_frame(AVFrame *frame);
+void close_frame(AVFrame *frame);
 
-AVFrame *
-decode(AVCodecContext *ctx,
+AVFrame * decode(AVCodecContext *ctx,
        uint8_t *data_in,
        int data_in_size,
        uint8_t **y_plane_out,
@@ -22,6 +18,7 @@ decode(AVCodecContext *ctx,
        int *width_out,
        int *height_out,
        int *stride_out,
+       unsigned long *timestamp_out,
        int *is_key_frame
 );
 
