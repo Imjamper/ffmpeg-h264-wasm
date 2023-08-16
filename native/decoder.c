@@ -55,7 +55,7 @@ AVFrame * decode(AVCodecContext *ctx,
         timestamp_out = strtoull(timeEntry->value, NULL, 10);
       }
       
-      av_dict_free(dict);
+      av_dict_free(&dict);
     }
 
     ret = avcodec_send_packet(ctx, avpkt);
