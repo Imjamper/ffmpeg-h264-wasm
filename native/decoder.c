@@ -37,8 +37,6 @@ AVFrame * decode(AVCodecContext *ctx,
     int ret;
 
     AVPacket *avpkt = av_packet_alloc();
-    avpkt->data = data_in;
-    avpkt->size = data_in_size;
 
     AVDictionary *dict = NULL;
     if (av_packet_unpack_dictionary(data_in, data_in_size, &dict) >= 0) {
