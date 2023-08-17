@@ -49,14 +49,8 @@ AVFrame * decode(AVCodecContext *ctx,
     AVPacket *avpkt = av_packet_alloc();
     avpkt->data = data_in;
     avpkt->size = data_in_size;
-    char timestring[14];
-    memcpy(timestring, data_in + (data_in_size - 13), 13);
-    timestring[13] = '\0';
-    *timestamp_out = timestring;
+    *timestamp_out = extractBytes(data_in, (data_in_size - 13), 13);
     
-    printf(timestring);
-    printf("\n");
-
     ret = avcodec_send_packet(ctx, avpkt);
     if (ret != 0) {
 		av_packet_free(&avpkt);

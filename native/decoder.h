@@ -18,7 +18,7 @@ AVFrame * decode(AVCodecContext *ctx,
        int *width_out,
        int *height_out,
        int *stride_out,
-       unsigned long *timestamp_out,
+       uint8_t **timestamp_out,
        int *is_key_frame
 );
 
