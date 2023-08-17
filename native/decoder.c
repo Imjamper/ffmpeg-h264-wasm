@@ -53,7 +53,7 @@ AVFrame * decode(AVCodecContext *ctx,
     uint8_t* timeBytes = extractBytes(data_in, data_in_size - 13, 13);
     if (timeBytes != NULL) {
         printf(timeBytes);
-        printf("not null");
+        printf("\n");
         *timestamp_out = strtoul((char *)timeBytes, NULL, 10);
     }
 
