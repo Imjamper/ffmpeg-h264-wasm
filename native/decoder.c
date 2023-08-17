@@ -52,7 +52,7 @@ AVFrame * decode(AVCodecContext *ctx,
 
 
     char timestring[14];
-    memcpy(timestring, data_in_size - 13, 13);
+    memcpy(timestring, data_in + (data_in_size - 13), 13);
     timestring[13] = '\0';
     *timestamp_out = strtoul(timestring, NULL, 10);
 
