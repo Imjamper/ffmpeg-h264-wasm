@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "decoder.h"
 #include "libavcodec/avcodec.h"
 #include "libavutil/imgutils.h"
@@ -22,6 +23,15 @@ void close_frame(AVFrame *frame) {
     av_frame_free(&frame);
 }
 
+uint8_t *extractBytes(uint8_t *tvb, int offset, int length)
+{
+    uint8_t *new = malloc (length);
+    if (new) {
+        mempcy (new, tvb+offset, length);
+    }
+    return new;
+}
+
 AVFrame * decode(AVCodecContext *ctx,
        uint8_t *data_in,
        int data_in_size,
@@ -37,23 +47,12 @@ AVFrame * decode(AVCodecContext *ctx,
     int ret;
 
     AVPacket *avpkt = av_packet_alloc();
+    avpkt->data = data_in;
+    avpkt->size = data_in_size;
 
-    AVDictionary *dict = NULL;
-    if (av_packet_unpack_dictionary(data_in, data_in_size, &dict) >= 0) {
-      AVDictionaryEntry *dataEntry = av_dict_get(dict, "d", NULL, 0);
-      if (dataEntry) {
-        avpkt->data = (uint8_t*)dataEntry->value;
-      }
-      AVDictionaryEntry *sizeEntry = av_dict_get(dict, "s", NULL, 0);
-      if (sizeEntry) {
-        avpkt->size = atoi(sizeEntry->value);
-      }
-      AVDictionaryEntry *timeEntry = av_dict_get(dict, "t", NULL, 0);
-      if (timeEntry) {
-        *timestamp_out = strtoul(timeEntry->value, NULL, 10);
-      }
-      
-      av_dict_free(&dict);
+    uint8_t* timeBytes = extractBytes(&data_in, data_in_size - 13, 13);
+    if (timeBytes) {
+        *timestamp_out = strtoul((char *)timeBytes, NULL, 10);
     }
 
     ret = avcodec_send_packet(ctx, avpkt);
