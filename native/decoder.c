@@ -19,7 +19,7 @@ void destroy_codec_context(AVCodecContext *ctx) {
     avcodec_free_context(&ctx);
 }
 
-void close_frame(AVFrame *frame) {
+void free_frame(AVFrame *frame) {
     av_frame_free(&frame);
 }
 

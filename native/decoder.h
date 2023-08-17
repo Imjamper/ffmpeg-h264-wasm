@@ -7,7 +7,7 @@ AVCodecContext * create_codec_context();
 
 void destroy_codec_context(AVCodecContext *ctx);
 
-void close_frame(AVFrame *frame);
+void free_frame(AVFrame *frame);
 
 AVFrame * decode(AVCodecContext *ctx,
        uint8_t *data_in,
