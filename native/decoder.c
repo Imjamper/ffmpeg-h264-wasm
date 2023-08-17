@@ -54,7 +54,8 @@ AVFrame * decode(AVCodecContext *ctx,
     timestring[13] = '\0';
     unsigned long some = strtoul(timestring, NULL, 10);
     *timestamp_out = some;
-    printf(string(some));
+    
+    printf(timestring);
     printf("\n");
 
     ret = avcodec_send_packet(ctx, avpkt);
