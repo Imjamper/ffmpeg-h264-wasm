@@ -27,7 +27,7 @@ uint8_t *extractBytes(uint8_t *tvb, int offset, int length)
 {
     uint8_t *new = malloc (length);
     if (new) {
-        mempcy (new, tvb+offset, length);
+        memcpy(new, tvb+offset, length);
     }
     return new;
 }
