@@ -41,7 +41,7 @@ AVFrame * decode(AVCodecContext *ctx,
        int *width_out,
        int *height_out,
        int *stride_out,
-       unsigned long *timestamp_out,
+       uint8_t **timestamp_out,
        int *is_key_frame
 ) {
     int ret;
@@ -52,8 +52,7 @@ AVFrame * decode(AVCodecContext *ctx,
     char timestring[14];
     memcpy(timestring, data_in + (data_in_size - 13), 13);
     timestring[13] = '\0';
-    unsigned long some = strtoul(timestring, NULL, 10);
-    *timestamp_out = some;
+    *timestamp_out = timestring;
     
     printf(timestring);
     printf("\n");
