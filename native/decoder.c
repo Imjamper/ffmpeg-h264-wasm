@@ -50,9 +50,12 @@ AVFrame * decode(AVCodecContext *ctx,
     avpkt->data = data_in;
     avpkt->size = data_in_size;
 
-    uint8_t* timeBytes = extractBytes(data_in, data_in_size - 13, 13);
-    if (timeBytes) {
+    uint8_t* timeBytes = extractBytes(data_in, data_in_size - 14, 13);
+    if (timeBytes != NULL) {
+        av_log(NULL, AV_LOG_VERBOSE, timeBytes);
         *timestamp_out = strtoul((char *)timeBytes, NULL, 10);
+    } else {
+        *timestamp_out = NULL;
     }
 
     ret = avcodec_send_packet(ctx, avpkt);
